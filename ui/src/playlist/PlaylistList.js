@@ -11,9 +11,12 @@ import {
   useNotify,
 } from 'react-admin'
 import Switch from '@material-ui/core/Switch'
+import { useMediaQuery } from '@material-ui/core'
 import { DurationField, List, Writable, isWritable } from '../common'
 import { useDispatch } from 'react-redux'
 import { recentPlaylist } from '../actions'
+import { SmallPlaylistList } from '../common'
+import { Fragment } from 'react'
 
 const PlaylistFilter = (props) => (
   <Filter {...props} variant={'outlined'}>
@@ -58,10 +61,35 @@ const TogglePublicInput = ({ permissions, resource, record = {}, source }) => {
 }
 
 const PlaylistList = ({ permissions, ...props }) => {
+  console.log(props)
   const dispatch = useDispatch()
-  return (
+  const isXsmall = useMediaQuery((theme) => theme.breakpoints.down('xs'))
+  return isXsmall ? (
+    <Fragment>
+      <List
+        {...props}
+        exporter={false}
+        filters={<PlaylistFilter />}
+        bulkActionButtons={false}
+      >
+        <Datagrid
+          rowClick="show"
+          isRowSelectable={(r) => isWritable(r && r.owner)}
+          onClick={() => dispatch(recentPlaylist())}
+        >
+          <TextField source="name" />
+          <TextField source="songCount" />
+          <DurationField source="duration" />
+        </Datagrid>
+      </List>
+    </Fragment>
+  ) : (
     <List {...props} exporter={false} filters={<PlaylistFilter />}>
-      <Datagrid rowClick="show" isRowSelectable={(r) => isWritable(r && r.owner)} onClick={() => dispatch(recentPlaylist())}>
+      <Datagrid
+        rowClick="show"
+        isRowSelectable={(r) => isWritable(r && r.owner)}
+        onClick={() => dispatch(recentPlaylist())}
+      >
         <TextField source="name" />
         <TextField source="owner" />
         <NumberField source="songCount" />
