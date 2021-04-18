@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import ReactGA from 'react-ga'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -20,7 +20,6 @@ import {
   setVolume,
   clearQueue,
   recentReset,
-  resetPlayer,
 } from '../actions'
 import config from '../config'
 import PlayerToolbar from './PlayerToolbar'
@@ -28,6 +27,7 @@ import { sendNotification } from '../utils'
 import { keyMap } from '../hotkeys'
 import useCurrentTheme from '../themes/useCurrentTheme'
 import { QualityInfo } from '../common/QualityInfo'
+// import './Player.css'
 
 const useStyle = makeStyles(
   (theme) => ({
@@ -39,10 +39,17 @@ const useStyle = makeStyles(
       },
     },
     qualityInfo: {
-      marginTop: '-2px',
+      marginTop: '-4px',
     },
     player: {
       display: (props) => (props.visible ? 'block' : 'none'),
+      '& .music-player-panel': {
+        height: '100px',
+        paddingBottom: '10px',
+      },
+    },
+    artistAlbum: {
+      marginTop: '2px',
     },
   }),
   { name: 'NDAudioPlayer' }
@@ -54,6 +61,7 @@ const AudioTitle = React.memo(({ audioInfo, isMobile }) => {
   const classes = useStyle()
   const className = classes.audioTitle
   const isDesktop = useMediaQuery('(min-width:960px)')
+  const [songTitleHover, setSongTitleHover] = useState(false)
 
   if (!audioInfo.name) {
     return ''
@@ -64,17 +72,28 @@ const AudioTitle = React.memo(({ audioInfo, isMobile }) => {
   return (
     <Link to={`/album/${audioInfo.albumId}/show`} className={className}>
       <span className={`${className} songTitle`}>
-        {audioInfo.name}
+        <span
+          onMouseEnter={() => setSongTitleHover(true)}
+          onMouseLeave={() => setSongTitleHover(false)}
+        >
+          {audioInfo.name}
+        </span>
         {isDesktop && (
-          <QualityInfo record={qi} className={classes.qualityInfo} />
+          <QualityInfo
+            record={qi}
+            className={classes.qualityInfo}
+            songTitleHover={songTitleHover}
+          />
         )}
       </span>
       {!isMobile && (
         <>
           <br />
-          <span className={`${className} songInfo`}>
-            {`${audioInfo.singer} - ${audioInfo.album}`}
-          </span>
+          <div className={classes.artistAlbum}>
+            <span className={`${className} songInfo`}>
+              {`${audioInfo.singer} - ${audioInfo.album}`}
+            </span>
+          </div>
         </>
       )}
     </Link>

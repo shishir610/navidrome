@@ -10,7 +10,6 @@ import SubMenu from './SubMenu'
 import inflection from 'inflection'
 import albumLists from '../album/albumLists'
 import { HelpDialog } from '../dialogs'
-import { recentReset } from '../actions'
 
 const useStyles = makeStyles((theme) => ({
   active: {
@@ -25,9 +24,9 @@ const translatedResourceName = (resource, translate) =>
     _:
       resource.options && resource.options.label
         ? translate(resource.options.label, {
-          smart_count: 2,
-          _: resource.options.label,
-        })
+            smart_count: 2,
+            _: resource.options.label,
+          })
         : inflection.humanize(inflection.pluralize(resource.name)),
   })
 
