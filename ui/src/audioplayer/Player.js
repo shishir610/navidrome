@@ -24,10 +24,10 @@ import {
 } from '../actions'
 import config from '../config'
 import PlayerToolbar from './PlayerToolbar'
-import { sendNotification, baseUrl } from '../utils'
+import { sendNotification } from '../utils'
 import { keyMap } from '../hotkeys'
 import useCurrentTheme from '../themes/useCurrentTheme'
-import { get } from 'lodash'
+import { QualityInfo } from '../common/QualityInfo'
 
 const useStyle = makeStyles(
   (theme) => ({
@@ -37,6 +37,9 @@ const useStyle = makeStyles(
       '&.songTitle': {
         fontWeight: 'bold',
       },
+    },
+    qualityInfo: {
+      marginTop: '-2px',
     },
     player: {
       display: (props) => (props.visible ? 'block' : 'none'),
@@ -50,14 +53,22 @@ let audioInstance = null
 const AudioTitle = React.memo(({ audioInfo, isMobile }) => {
   const classes = useStyle()
   const className = classes.audioTitle
+  const isDesktop = useMediaQuery('(min-width:960px)')
 
   if (!audioInfo.name) {
     return ''
   }
 
+  const qi = { suffix: audioInfo.suffix, bitRate: audioInfo.bitRate }
+
   return (
     <Link to={`/album/${audioInfo.albumId}/show`} className={className}>
-      <span className={`${className} songTitle`}>{audioInfo.name}</span>
+      <span className={`${className} songTitle`}>
+        {audioInfo.name}
+        {isDesktop && (
+          <QualityInfo record={qi} className={classes.qualityInfo} />
+        )}
+      </span>
       {!isMobile && (
         <>
           <br />
@@ -82,18 +93,6 @@ const Player = () => {
   const showNotifications = useSelector(
     (state) => state.settings.notifications || false
   )
-  const action = useSelector((state) => get(state, 'player', ''))
-
-  useEffect(() => {
-    switch (action) {
-      case 'pause':
-        audioInstance.pause()
-        dispatch(resetPlayer())
-        break
-      default:
-        console.log()
-    }
-  }, [action, dispatch])
 
   const visible = authenticated && queue.queue.length > 0
   const classes = useStyle({ visible })
@@ -264,7 +263,7 @@ const Player = () => {
           sendNotification(
             info.name,
             `${info.singer} - ${info.album}`,
-            baseUrl(info.cover)
+            info.cover
           )
         }
       }
